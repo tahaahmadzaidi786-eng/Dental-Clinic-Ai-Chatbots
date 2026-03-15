@@ -1,1 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sarah — Benoit Family Dental</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --clinic-primary:#1a6b8a;
+  --clinic-light:#e8f4f8;
+  --clinic-accent:#2d9cae;
+  --bg:#f7fbfc;
+  --white:#ffffff;
+  --text:#1c2b30;
+  --muted:#6b8591;
+  --border:#d0e8ef;
+  --radius:18px;
+  --font-body:'DM Sans',sans-serif;
+  --font-display:'Fraunces',serif;
+}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:10}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--clinic-primary),var(--clinic-accent));display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.avatar-letter{color:white;font-size:18px;font-family:var(--font-display);font-weight:500}
+.status-dot{width:10px;height:10px;background:#22c55e;border-radius:50%;border:2px solid white;position:absolute;bottom:1px;right:1px}
+.header-info h2{font-size:15px;font-weight:500;color:var(--text)}
+.header-info p{font-size:12px;color:var(--muted);margin-top:1px}
+.clinic-tag{margin-left:auto;font-size:11px;background:var(--clinic-light);color:var(--clinic-primary);padding:4px 10px;border-radius:20px;font-weight:500;white-space:nowrap}
+.chat-area{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:14px;min-height:400px;max-height:520px}
+.msg{display:flex;gap:10px;align-items:flex-end;max-width:85%}
+.msg.user{flex-direction:row-reverse;align-self:flex-end}
+.msg.bot{align-self:flex-start}
+.bubble{padding:11px 15px;border-radius:var(--radius);font-size:14px;line-height:1.55;max-width:100%}
+.msg.bot .bubble{background:var(--white);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text)}
+.msg.user .bubble{background:var(--clinic-primary);color:white;border-bottom-right-radius:4px}
+.msg-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--clinic-primary),var(--clinic-accent));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:white;font-family:var(--font-display)}
+.typing{display:flex;align-items:center;gap:5px;padding:12px 15px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);border-bottom-left-radius:4px;width:fit-content}
+.dot{width:7px;height:7px;background:var(--muted);border-radius:50%;animation:bounce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.input-area{padding:14px 16px;background:var(--white);border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;position:sticky;bottom:0}
+.input-area input{flex:1;border:1px solid var(--border);border-radius:24px;padding:10px 16px;font-size:14px;font-family:var(--font-body);outline:none;color:var(--text);background:var(--bg)}
+.input-area input:focus{border-color:var(--clinic-accent)}
+.send-btn{width:38px;height:38px;border-radius:50%;background:var(--clinic-primary);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn:hover{background:var(--clinic-accent)}
+.send-btn svg{width:16px;height:16px;fill:white}
+.quick-btns{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;flex-wrap:nowrap}
+.qbtn{font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--clinic-primary);cursor:pointer;white-space:nowrap;font-family:var(--font-body)}
+.qbtn:hover{background:var(--clinic-light);border-color:var(--clinic-accent)}
+</style>
+</head>
+<body>
 
+<div class="header">
+  <div class="avatar"><span class="avatar-letter">S</span><div class="status-dot"></div></div>
+  <div class="header-info">
+    <h2>Sarah</h2>
+    <p>Benoit Family Dental · Virtual Receptionist</p>
+  </div>
+  <div class="clinic-tag">Benoit Family Dental</div>
+</div>
+
+<div class="chat-area" id="chatArea"></div>
+
+<div class="quick-btns" id="quickBtns"></div>
+
+<div class="input-area">
+  <input id="userInput" type="text" placeholder="Type your message..." />
+  <button class="send-btn" id="sendBtn">
+    <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+<script>
+const CLINIC_CONFIG = {
+  agentName: "Sarah",
+  clinicName: "Benoit Family Dental",
+  phone: "713-529-3069",
+  email: "info@drbenoitdds.com",
+  location: "Houston, TX",
+  hours: "Mon-Tue 8am-5pm, Wed-Thu 9am-6pm, Fri 8am-2pm (once/mo), Sat once/mo for cleanings",
+  specialty: "general, cosmetic, and family dentistry",
+  quickQuestions: [
+    "What services do you offer?",
+    "Are you open Saturdays?",
+    "Do you handle emergencies?",
+    "How do I book an appointment?"
+  ]
+};
+
+const SYSTEM_PROMPT = `You are ${CLINIC_CONFIG.agentName}, a warm and professional virtual receptionist for ${CLINIC_CONFIG.clinicName} in ${CLINIC_CONFIG.location}.
+
+Your job: answer patient questions about services, hours, and appointments. Be friendly, concise, and helpful.
+
+Clinic details:
+- Phone: ${CLINIC_CONFIG.phone}
+- Hours: ${CLINIC_CONFIG.hours}
+- Specialty: ${CLINIC_CONFIG.specialty}
+
+Rules:
+1. Answer questions about services, hours, location, pricing
+2. Always encourage booking an appointment
+3. If unsure say: "You can call us at ${CLINIC_CONFIG.phone} and our team will help!"
+4. Collect patient name and contact number for callbacks
+5. Never admit you are an AI unless directly asked. If asked: "I'm ${CLINIC_CONFIG.agentName}, ${CLINIC_CONFIG.clinicName}'s virtual assistant — here to help 24/7!"
+6. End every response with a helpful next step
+7. Keep responses under 80 words — brief and warm`;
+
+let messages = [];
+
+function addBotMessage(text) {
+  const ca = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-avatar">${CLINIC_CONFIG.agentName[0]}</div><div class="bubble">${text}</div>`;
+  ca.appendChild(div);
+  ca.scrollTop = ca.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const ca = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `<div class="bubble">${text}</div>`;
+  ca.appendChild(div);
+  ca.scrollTop = ca.scrollHeight;
+}
+
+function showTyping() {
+  const ca = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing';
+  div.innerHTML = `<div class="msg-avatar">${CLINIC_CONFIG.agentName[0]}</div><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  ca.appendChild(div);
+  ca.scrollTop = ca.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendMessage(text) {
+  if (!text.trim()) return;
+  document.getElementById('userInput').value = '';
+  addUserMessage(text);
+  messages.push({ role: 'user', content: text });
+  showTyping();
+  document.getElementById('sendBtn').disabled = true;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: messages
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || "I'm sorry, I couldn't process that. Please call us at " + CLINIC_CONFIG.phone;
+    removeTyping();
+    messages.push({ role: 'assistant', content: reply });
+    addBotMessage(reply);
+  } catch(e) {
+    removeTyping();
+    addBotMessage(`Sorry, something went wrong. Please call us at ${CLINIC_CONFIG.phone}!`);
+  }
+  document.getElementById('sendBtn').disabled = false;
+}
+
+document.getElementById('sendBtn').onclick = () => {
+  const v = document.getElementById('userInput').value;
+  if (v.trim()) sendMessage(v);
+};
+document.getElementById('userInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { const v = e.target.value; if (v.trim()) sendMessage(v); }
+});
+
+const qc = document.getElementById('quickBtns');
+CLINIC_CONFIG.quickQuestions.forEach(q => {
+  const b = document.createElement('button');
+  b.className = 'qbtn';
+  b.textContent = q;
+  b.onclick = () => sendMessage(q);
+  qc.appendChild(b);
+});
+
+addBotMessage(`Hi there! I'm ${CLINIC_CONFIG.agentName}, your virtual assistant for ${CLINIC_CONFIG.clinicName}. How can I help you today?`);
+</script>
+</body>
+</html>
